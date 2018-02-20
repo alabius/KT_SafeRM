@@ -1,5 +1,5 @@
 #!/bin/bash
-#create variables 
+#create variables
 home="$HOME"
 trashName=".Trash_saferm"
 trashPath="$home/$trashName"
@@ -8,22 +8,30 @@ pathFile=$1
 function moveFile {
 	mv $pathFile $trashPath
 }
+function movedir {
+	mv $pathFile $trashPath
+}
 #Check if ~/.Trash_saferm exists, if it doesn't, then create it
 	if [[ ! -d "$trashPath" ]]; then
         mkdir "$trashPath"
-		echo "$trashName successfully create"	
+		echo "$trashName successfully create"
 	else
-		echo "$trashName already exit"	
+		echo
 	fi
 #check if item to be deleted is a file or directory
 	if [[ -f $pathFile ]]; then
-        echo "$pathFile is a file"
-#Check User Imout for Yes
-		read -p "are you sure you wan to delete $pathFile" response
-        elif [[ $response =~ ^[y/Y]$ ]]
-            then
-				moveFile
-                echo "$pathFile Moved"
-	else
-		echo "$pathFile is a directory"
-	fi
+        echo "Wao, do you know that $pathFile is a file?"
+				echo
+#Check User Input for Yes
+read -p "Do you want to remove $pathFile? Y/N " -n 2 -r
+if [[ $REPLY =~ ^[y/Y]$  ]];
+	then
+		moveFile
+		echo "$pathFile removed"
+elif [[ $REPLY =~ ^[n/N]$ ]];
+	then
+		echo "You just declined to remove $pathFile"
+else
+	echo
+fi
+fi
