@@ -1,37 +1,100 @@
 #!/bin/bash
-#create variables
-home="$HOME"
-trashName=".Trash_saferm"
-trashPath="$home/$trashName"
-pathFile=$1
-#create function for move file
-function moveFile {
-	mv $pathFile $trashPath
+# this is a test project
+currentPath=$(pwd)
+currentItem=$1
+itemPath=$currentPathD/$currentItem
+trashPath="$HOME/.Trash_Saferm"
+
+#FUNCTIONS
+moveFile(){
+  mv "$1" $trashPath
 }
-function movedir {
-	mv $pathFile $trashPath
+moveItem(){
+      #first get user response to remove file
+          read -p "remove $1? " response
+          if [[ $response == Y* ]] || [[ $response == y* ]]
+          then
+              #remove file
+                  # mv "$1" $trashPath
+                  echo "You just removed $1"
+          #      # echo "$1 has been removed"
+          else
+              #file isn't remove
+                  echo "Yo have declined to remove $1, please try again"
+          fi
+   # fi
 }
-#Check if ~/.Trash_saferm exists, if it doesn't, then create it
-	if [[ ! -d "$trashPath" ]]; then
-        mkdir "$trashPath"
-		echo "$trashName successfully create"
-	else
-		echo
-	fi
-#check if item to be deleted is a file or directory
-	if [[ -f $pathFile ]]; then
-        echo "Wao, do you know that $pathFile is a file?"
-				echo
-#Check User Input for Yes
-read -p "Do you want to remove $pathFile? Y/N " -n 2 -r
-if [[ $REPLY =~ ^[y/Y]$  ]];
-	then
-		moveFile
-		echo "$pathFile removed"
-elif [[ $REPLY =~ ^[n/N]$ ]];
-	then
-		echo "You just declined to remove $pathFile"
-else
-	echo
+
+ backOneStep(){
+  # currentdir=$(dirname $currentdir)
+  dirContentsCheck=$(ls -l "$currentdir" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' | wc -l | xargs)
+  read -p "Do you want to remove  $currentdir? " response
+    if [[ $response == Y* || $response == y* ]] && [[ $dirContentsCheck -eq 0 || $dirContentsCheck -gt 0 ]]
+    then
+      # removeFile
+      moveFileFile $currentdir
+      echo "$currentdir removeFiled"
+    else
+        echo "$currentdir not removeFiled"
+    fi
+
+    }
+
+
+interateDir(){
+
+     currentdir="$1"
+     totalItems=$(ls -l "$currentdir" | sort -k1,1  | awk -F " " '{print $NF}' | sed -e '$ d')
+
+    # dirContentsCheck=$(ls -l "$1" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' | wc -l | xargs)
+
+          for object in $totalItems
+          do
+
+              # echo "looping again"
+              if [[ -f "$currentdir/$object" ]]
+              then
+                # echo "$object is a file"
+                  moveItem $currentdir/$object
+              else
+                    dirContentsCheck=$(ls -l "$currentdir/$object" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' | wc -l | xargs)
+										echo " "
+										read -p "Do you want to examine files in directory $currentdir/$object? " response
+                    if [[ $response == Y* || $response == y* ]]
+                    then
+                       if [[ $dirContentsCheck -gt 0 ]]
+                       then
+                        interateDir $currentdir/$object
+                      else
+                        moveFileItem $currentdir/$object
+                      fi
+
+                    else
+                        echo "$currentdir/$object not examined"
+                    fi
+
+              fi
+          done
+           backOneStep $currentdir/$object
+
+           currentdir=$(dirname $currentdir)
+
+}
+# FOR FILES
+if [[ -f "$currentItem" ]];
+then
+    moveFileItem $currentItem
 fi
+
+#FOR DIRECTORIES
+if [[ -d "$1" ]];
+then
+        echo ""
+      read -p "Do you want to examine files in directory $1? " response
+     if [[ $response == Y* ]] || [[ $response == y* ]]
+     then
+        interateDir $1
+     else
+         echo "Request to examine $1 declined"
+     fi
 fi
