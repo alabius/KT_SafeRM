@@ -1,15 +1,22 @@
 #!/bin/bash
-
+home=$HOME
 trashName=".Trash_saferm"
-trashPath="$HOME/$trashName"
+trashPath="$home/$trashName"
 currentPath=$1
-itemListing=$(ls -l "$currentPath")
+# itemListing=$(ls -l "$currentPath")
 loopArray[0]='.'
 loopCount=0
+dirCount=$( ls -l "$1" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' | wc -l | xargs)
+dirItems=$(ls -l "$1" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' )
 
+if [ ! -d "trashPath" ];
+then
+  mkdir "trashPath"
+  echo "$trashName successfully created"
+fi
 #function for Directory or File Checking
 ifFileOrDir(){
-    if [[ -f "${?}" ]]
+    if [[ -f "$1" ]]
     then
         true
     else
@@ -24,23 +31,19 @@ isNo(){
 }
 #Code to handle files
 forFiles() {
-
-    read -p "do you want to remove $1?" response
+    read -p "do you want to remove $1? " response
     #if the first letter of the reply is lower or upper case Y
     if isYes;
     then
-        mv $1 $trashPath
+        mv "$1" $trashPath
         echo "$1 removed"
     #else if the first letter of the reply is lower or upper case N
-  elif isNo;
-    then
-        echo "Request to move $1 declined"
     else
-        echo "Not a valid file of directory"
+        echo "Request declined"
     fi
 }
 
-#Code to handle files
+#Code to handle directory
 forDirectories() {
 
     loopCount=$((loopCount+1))
@@ -54,36 +57,34 @@ forDirectories() {
     if isYes
     then
         #examine each file
-        dirItems=$(ls -l "$1" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' )
-        dirCount=$( ls -l "$1" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' | wc -l | xargs)
-        nowPath=$1
+        presentPath=$1
         echo $dirCount
         if [[ $dirCount -gt true ]]
         then
             echo "This directory is not empty"
-
             for i in $dirItems; do
 
                 #check if item is a file or directory
-                ifFileOrDir "$nowPath/$i"
+                ifFileOrDir "$presentPath/$i"
 
-                if [[ $? -eq true ]]
+                if [[ $i -eq true ]]
                 then
-                        forFiles "$nowPath/$i"
+                        forFiles "$presentPath/$i"
                 else
 
-                  forDirectories "$nowPath/$i"
+                  forDirectories "$presentPath/$i"
 
-                  #handle caller
-                  forFiles "${loopArray[$loopCount]}"
-                      #move back one folder
-                    loopCount=$((loopCount-1))
+                  # #handle caller
+                  # forFiles "${loopArray[$loopCount]}"
+                  # move back one folder
+                  loopCount=$((loopCount-1))
                 fi
             done
         else
             echo "This directory is empyt"
             #delete the directory
-            forFiles $nowPath
+            forFiles $presentPath/$i
+            presentPath=$(dirName $presentPath)
         fi
 
     fi

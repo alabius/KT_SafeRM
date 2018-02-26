@@ -1,13 +1,13 @@
 #!/bin/bash
-# this is a test project
-currentPath=$(pwd)
-currentItem=$1
-itemPath=$currentPathD/$currentItem
-trashPath="$HOME/.Trash_Saferm"
-flashRed="\033[5;1;47;31m"
-red="\033[31;40m"
-none="\033[0m"
-#FUNCTIONS
+# program to emulate the "rm" command in UNIX.
+# less the endless sp
+
+#  CREATE TRASH FOLDER
+
+if ! [ -d "$HOME/deleted" ] ; then
+     mkdir $HOME/deleted
+fi
+
 # INITIALIZE VARIABLES
 OPT=-
 NO_ARGS=0
@@ -15,24 +15,10 @@ FLAG_R=""
 FLAG_F=""
 FLAG_I=""
 FLAG_V=""
+TRASH=$HOME/deleted
 
-function recursiveProcess() {
-  echo " "
-  read -p "Do you want to examine files in directory $1? " response
- if [[ $response == Y* ]] || [[ $response == y* ]]
- then
-    interateDir $1
- else
-     echo -e "Request to examine $flashRed"$1" $none"declined" "
- fi
-}
-function errorNoSuch() {
 
-   echo "rm: cannot remove $* : no such file or directory"
-}
-moveFile(){
-  mv "$1" $trashPath
-}
+# FUNCTIONS
 question(){
   echo -e $none"Do you wan to remove"  $flashRed"$1?"$none
 }
@@ -43,7 +29,7 @@ moveItem(){
           if [[ $response == Y* ]] || [[ $response == y* ]] &&  [ "$FLAG_V" = "v" ]
           then
               #remove file
-                  mv "$1" $trashPath
+                  mv $@ $TRASH 2>/dev/null
                   echo -e $non"You just removed" $flashRed"$1 $none"
           #      # echo "$1 has been removed"
           else
@@ -61,7 +47,7 @@ moveItem(){
     if [[ $response == Y* || $response == y* ]] && [[ $dirChek -eq 0 || $dirChek -gt 0 ]]
     then
       # removeFile
-      moveFile $currentdir
+      moveItem $currentdir
       echo ""
       echo "$currentdir successfully removed"
     else
@@ -82,7 +68,6 @@ function writePro () {
 
 fi
   }
-
 interateDir(){
 
      currentdir="$1"
@@ -122,6 +107,79 @@ interateDir(){
            currentdir=$(dirname $currentdir)
 
 }
+function errorInvailidOpt() {
+
+    echo "rm: invalid option - $o"
+    echo "try \`rm -help\` for more information"
+    exit 0
+}
+
+
+function errorTooFew() {
+
+   echo "rm: too few arguments"
+   echo "try \`rm --help\` for more information"
+}
+
+function errorNoSuch() {
+
+   echo "rm: cannot remove $* : no such file or directory"
+}
+
+function writePro () {
+echo -n "rm: remove write-protected file \`$*'?"
+read ANSWER
+    if [ "$ANSWER" = "y" ] &&  [ "$FLAG_V" = "v" ] ; then
+    mv $OPTS $@ $TRASH 2>/dev/null
+    echo "removing \`$*'"
+    else
+    mv $OPTS $@ $TRASH 2>/dev/null
+
+fi
+}
+
+function verbose () {
+mv $@ $TRASH 2>/dev/null
+echo "$* removed successfully"
+}
+function intVerbose () {
+echo -n "Do you want to remove $*? "
+    read ANSWER
+    if [ "$ANSWER" = "y" ] ; then
+      mv  $@ $TRASH 2>/dev/null
+    echo "$* removed successfully"
+    else
+      echo "$@ not removed"
+
+
+fi
+}
+
+function int () {
+echo -n "Do you want to remove $*? "
+    read ANSWER
+    if [ "$ANSWER" = "y" ] ; then
+    mv  $@ $TRASH 2>/dev/null
+fi
+}
+function noOptions () {
+  if [[ -f "$1" ]]; then
+        mv $@ $TRASH 2>/dev/null
+  #FOR DIRECTORIES
+elif [[ -w "$1" ]];then
+            echo " "
+            read -p "Do you want to examine files in directory $1? " response
+           if [[ $response == Y* ]] || [[ $response == y* ]]
+           then
+              interateDir $1
+           else
+               echo -e "Request to examine $flashRed"$1" $none"declined" "
+           fi
+  else
+    errorNoSuch $1
+  fi
+}
+
 function delete() {
 while :
 do  case $OPTS in
@@ -141,45 +199,45 @@ do  case $OPTS in
                      r) mv $OPTS $@ $TRASH 2>/dev/null
                       break
                       ;;
-                     *) mv $@ $TRASH 2>/dev/null
+                     *) noOptions $@
+                      break
+                      ;;
+                     *) mv $@ $OPTS $TRASH 2>/dev/null
                       break
 
 esac
 done
 
 }
+
 # GETOPTS
 
-while getopts :rRdfvi o
+while getopts :rRfvi o
 do    case $o in
            r|R)FLAG_R=""
              ;;
-             d) FLAG_F=f
+             f) FLAG_F=f
              ;;
              v) FLAG_V=v
              ;;
              i) FLAG_I=i
              ;;
-             f) FLAG_I=i
-             ;;
              *) errorInvalidOpt
+
       esac
 done
 shift `expr $OPTIND - 1`
-currentItem=$1
-# FOR FILES
-if [[ -f "$currentItem" ]]; then
-      moveItem $currentItem
-#FOR DIRECTORIES
-  elif [[ -w "$currentItem" ]];then
-          echo " "
-          read -p "Do you want to examine files in directory $1? " response
-         if [[ $response == Y* ]] || [[ $response == y* ]]
-         then
-            interateDir $1
-         else
-             echo -e "Request to examine $flashRed"$1" $none"declined" "
-         fi
+
+# FLOW CONTROL
+
+OPTS=$FLAG_R$FLAG_F$FLAG_I$FLAG_V
+
+if [ "$#" -eq "$NO_ARGS" ] ; then
+   errorTooFew $@
+elif ! [ -f  "$1" ] &&  ! [ -d "$1" ]; then
+   errorNoSuch $@
+elif ! [ -w  "$1" ] ; then
+   writePro $@
 else
-  errorNoSuch $1
+   delete $@
 fi
