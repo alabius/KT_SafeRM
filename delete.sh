@@ -57,20 +57,18 @@ mv $@ $TRASH 2>/dev/null
 echo "removing \`$*'"
 }
 function intVerbose () {
-echo -n "Do you want to remove $*? "
+echo -n "rm: remove $* ?"
     read ANSWER
     if [ "$ANSWER" = "y" ] ; then
-      mv  $@ $TRASH 2>/dev/null
-    echo "$* removed successfully"
-    else
-      echo "$@ not removed"
+    mv  $@ $TRASH 2>/dev/null
+    echo "removing \`$*'"
 
 
 fi
 }
 
 function int () {
-echo -n "Do you want to remove $*? "
+echo -n "rm: remove $* ?"
     read ANSWER
     if [ "$ANSWER" = "y" ] ; then
     mv  $@ $TRASH 2>/dev/null
@@ -93,10 +91,10 @@ do  case $OPTS in
                      i) int $@
                       break
                       ;;
-                     r) mv $OPTS $@ $TRASH 2>/dev/null
+                     r)mv $OPTS $@ $TRASH 2>/dev/null
                       break
                       ;;
-                     *) mv $@ $TRASH 2>/dev/null
+                     *)mv $@ $TRASH 2>/dev/null
                       break
 
 esac

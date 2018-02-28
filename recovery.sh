@@ -133,6 +133,7 @@ function intVerbose () {
     echo "Oops, $@ not removed"
   fi
 }
+#
 function int () {
   echo -n "Do you want to remove $*? "
   read ANSWER
@@ -142,7 +143,21 @@ function int () {
     echo "Oops, request denied"
   fi
 }
-
+#Function to recover file from the trash to the parent working directory
+function undo () {
+  echo -n "Do you want to recover $*? "
+  read ANSWER
+  if [ "$ANSWER" = "y" ]; then
+    for file in  $@ ; do
+    if [ -w "$TRASH/$file" ] ; then
+        mv "$TRASH/$file" $PWD
+    else
+        echo "Hmm,.. I cannot find $file."
+    fi
+    done
+  fi
+}
+#function to execute with supplied options -v -f -d -i or combinations
 function delete() {
 while :
 do  case $OPTS in
@@ -165,18 +180,25 @@ do  case $OPTS in
                      d) mv $OPTS $@ $TRASH 2>/dev/null
                       break
                       ;;
-                     *) forDirectories $@
+                     u) undo $@
                       break
-
+                      ;;
+                     *) if [[ -f "$1" ]]
+                          then
+                            forFiles $@
+                          else
+                            forDirectories $@
+                     fi
+                      break
 esac
 done
 
 }
 
 
-# GETOPTS
+# GETOPTS for all options to used
 
-while getopts :rRfvid o
+while getopts :rRfvidu o
 do    case $o in
              R)FLAG_R=R
              ;;
@@ -190,28 +212,25 @@ do    case $o in
              ;;
              d) FLAG_D=d
              ;;
+             u) FLAG_U=u
+             ;;
              *) errorInvalidOpt
 
       esac
 done
 shift `expr $OPTIND - 1`
 
-# FLOW CONTROL
+# FLOW CONTROL for all flags
 
-OPTS=$FLAG_R$FLAG_F$FLAG_I$FLAG_V$FLAG_D
+OPTS=$FLAG_R$FLAG_F$FLAG_I$FLAG_V$FLAG_D$FLAG_U
 
+#check if there is any supplied arguments
 if [ "$#" -eq "$NO_ARGS" ] ; then
    errorTooFew $@
-elif ! [ -f  "$1" ] &&  ! [ -d "$1" ]; then
-   errorNoSuch $@
- elif ! [ -f  "$1" ] &&  ! [ -d "$1" ]; then
-    errorNoSuch $@
-elif ! [ -w  "$1" ] ; then
-   writePro $@
-# elif [ -f  "$1" ] &&  [ "$FLAG_V" = "" ] ; then
-#   forFiles $@
-# elif [ -d  "$1" ]; then
-#   forDirectories $@
+# elif ! [ -f  "$1" ] &&  ! [ -d "$1" ]; then
+#    errorNoSuch $@
+# elif ! [ -w  "$1" ] ; then
+#    writePro $@
 else
    delete $@
 fi
