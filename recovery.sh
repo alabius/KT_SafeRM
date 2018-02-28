@@ -19,15 +19,12 @@ FLAG_F=""
 FLAG_I=""
 FLAG_V=""
 FLAG_D=""
-#Create variable to hold TRASH DIRECTORY
 TRASH=$HOME/deleted
 
-#confirm if response is YES or NO
 isYes(){
   [[ $response =~ ^[y*/Y*]$ ]]
 }
-
-# FUNCTIONS to process script for files
+# FUNCTIONS
 forFiles() {
     read -p "Do you want to remove $1? " response
     #if the first letter of the reply is lower or upper case Y
@@ -35,13 +32,11 @@ forFiles() {
     then
         mv  "$@" $TRASH 2>/dev/null
         echo "$1 removed"
-    #If the response if another other thing other than Y or y
+    #else if the first letter of the reply is lower or upper case N
     else
         echo "Request declined"
     fi
 }
-
-# FUNCTIONS to process script for directory
 forDirectories() {
 
     loopCount=$((loopCount+1))
@@ -88,8 +83,6 @@ forDirectories() {
     fi
 
 }
-
-#Function to check if the item is file or directory
 function ifFileOrDir() {
   if [[ -f "$1" ]]
   then
@@ -98,26 +91,18 @@ function ifFileOrDir() {
       false
   fi
 }
-
-#function to handle errors when no argument is supply to the command
 function errorInvailidOpt() {
   echo "rm: invalid option - $o"
   echo "try \`rm -help\` for more information"
   exit 0
 }
-
-#function to handle errors when option supplied do not match
 function errorTooFew() {
   echo "rm: too few arguments"
   echo "try \`rm --help\` for more information"
 }
-
-#function to handle errors when argument supplied do not exist
 function errorNoSuch() {
   echo "Error: $* is not a valid file or directory"
 }
-
-#function to handle errors when argument supplied is write protected
 function writePro () {
   echo -n "$* is write protected, do you want to still remove $*? "
   read ANSWER
@@ -128,8 +113,6 @@ function writePro () {
       mv $OPTS $@ $TRASH 2>/dev/null
     fi
 }
-
-#function to handle verbose i.e v|ivf|vf|ifv|vif options
 function verbose () {
   echo -n "Do you want to remove \`$*'?"
   read ANSWER
@@ -140,8 +123,6 @@ function verbose () {
     echo " \`$*' not removed"
   fi
 }
-
-#function to handle verbose i.e vfi|fvi|iv|vi|fiv options
 function intVerbose () {
   echo -n "Do you want to remove $*? "
   read ANSWER
@@ -152,19 +133,16 @@ function intVerbose () {
     echo "Oops, $@ not removed"
   fi
 }
-
-#function to handle verbose i.e -i options
+#
 function int () {
   echo -n "Do you want to remove $*? "
   read ANSWER
   if [ "$ANSWER" = "y" ]; then
     mv $@ $TRASH 2>/dev/null
-    echo "$@ recobvered successfully"
   else
     echo "Oops, request denied"
   fi
 }
-
 #Function to recover file from the trash to the parent working directory
 function undo () {
   echo -n "Do you want to recover $*? "
