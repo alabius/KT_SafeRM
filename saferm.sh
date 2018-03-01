@@ -25,22 +25,20 @@ moveItem(){
    # fi
 }
 
- backOneStep(){
+backOneStep(){
   # currentdir=$(dirname $currentdir)
   dirContentsCheck=$(ls -l "$currentdir" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' | wc -l | xargs)
   read -p "Do you want to remove  $currentdir? " response
     if [[ $response == Y* || $response == y* ]] && [[ $dirContentsCheck -eq 0 || $dirContentsCheck -gt 0 ]]
     then
       # removeFile
-      moveFileFile $currentdir
-      echo "$currentdir removeFiled"
+      mv  "$currentdir" $HOME 2>/dev/null
+      echo "$currentdir removed"
     else
         echo "$currentdir not removeFiled"
     fi
 
     }
-
-
 interateDir(){
 
      currentdir="$1"
@@ -83,7 +81,7 @@ interateDir(){
 # FOR FILES
 if [[ -f "$currentItem" ]];
 then
-    moveFileItem $currentItem
+    moveItem $currentItem
 fi
 
 #FOR DIRECTORIES

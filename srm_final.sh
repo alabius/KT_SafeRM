@@ -1,6 +1,5 @@
 #!/bin/bash
 # program to emulate the "rm" command in UNIX.
-# less the endless sp
 loopArray[0]='.'
 loopCount=0
 dirCount=$( ls -l "$@" | sort -k1,1 | awk -F " " '{print $NF}' | sed -e '$ d' | wc -l | xargs)
@@ -123,7 +122,7 @@ function writePro () {
   read ANSWER
     if [ "$ANSWER" = "y" ] &&  [ "$FLAG_V" = "v" ] ; then
       mv $OPTS $@ $TRASH 2>/dev/null
-      echo "remove \`$*'"
+      echo "$* removed successfully"
     else
       mv $OPTS $@ $TRASH 2>/dev/null
     fi
@@ -131,13 +130,13 @@ function writePro () {
 
 #function to handle verbose i.e v|ivf|vf|ifv|vif options
 function verbose () {
-  echo -n "Do you want to remove \`$*'?"
+  echo -n "Do you want to remove $*? "
   read ANSWER
   if [ "$ANSWER" = "y" ]; then
     mv $@ $TRASH 2>/dev/null
-    echo "remove \`$*'"
+    echo "$* successfully removed"
   else
-    echo " \`$*' not removed"
+    echo " $* not removed"
   fi
 }
 
@@ -184,16 +183,28 @@ function delete() {
 while :
 do  case $OPTS in
 
-      v|ivf|vf|ifv|vif) verbose $@
+      v|ivf|vf|ifv|vif) if [[ -f "$1" ]]; then
+                          verbose $@
+                        else
+                          echo "$@ is a directory"
+                        fi
                       break
                       ;;
      vfi|fvi|iv|vi|fiv) intVerbose $@
                       break
                       ;;
-               f|fv|if) mv $OPTS $@ $TRASH 2>/dev/null
+               f|fv|if) if [[ -f "$1" ]]; then
+                          mv $OPTS $@ $TRASH 2>/dev/null
+                        else
+                          echo "$@ is a directory"
+                        fi
                       break
                       ;;
-                     i) int $@
+                     i) if [[ -f "$1" ]]; then
+                          int $@
+                        else
+                          echo "$@ is a directory"
+                        fi
                       break
                       ;;
                      r|R) mv $OPTS $@ $TRASH 2>/dev/null

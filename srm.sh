@@ -196,14 +196,14 @@ function ifFileOrDir() {
 
 #function to handle errors when no argument is supply to the command
 function errorInvailidOpt() {
-  echo "rm: invalid option - $o"
+  echo "srm: invalid option - $o"
   echo "try \`rm -help\` for more information"
   exit 0
 }
 
 #function to handle errors when option supplied do not match
 function errorTooFew() {
-  echo "rm: too few arguments"
+  echo "srm: too few arguments"
   echo "try \`rm --help\` for more information"
 }
 
@@ -226,13 +226,13 @@ function writePro () {
 
 #function to handle verbose i.e v|ivf|vf|ifv|vif options
 function verbose () {
-  echo -n "Do you want to remove $*? "
+  echo -n "remove $*? "
   read ANSWER
   if [ "$ANSWER" = "y" ]; then
     mv itemPath $TRASH 2>/dev/null
-    echo "$* successfully removed"
+    echo "$*"
   else
-    echo " $* not removed"
+    echo ""
   fi
 }
 
@@ -242,21 +242,21 @@ function intVerbose () {
   read ANSWER
   if [ "$ANSWER" = "y" ] ; then
     mv $@ $TRASH 2>/dev/null
-    echo "$* removed successfully"
+    echo "$* removed"
   else
-    echo "Oops, $@ not removed"
+    echo ""
   fi
 }
 
 #function to handle verbose i.e -i options
 function int () {
-  echo -n "Do you want to remove $*? "
+  echo -n "remove $*? "
   read ANSWER
   if [ "$ANSWER" = "y" ]; then
     mv $@ $TRASH 2>/dev/null
-    echo "$@ recobvered successfully"
+    echo ""
   else
-    echo "Oops, request denied"
+    echo " "
   fi
 }
 
@@ -267,26 +267,26 @@ function delFile(){
        forFiles $@
      else
         echo ""
-        read -p "Do you want to examine files in directory $1? " response
+        read -p "examine files in directory $1? " response
         if [[ $response == Y* ]] || [[ $response == y* ]]
         then
           interateDir $1
         else
-          echo "Request to examine $1 declined"
+          echo " "
         fi
   fi
 }
 
 #Function to recover file from the trash to the parent working directory
 function undo () {
-  echo -n "Do you want to recover $*? "
+  echo -n "recover $*? "
   read ANSWER
   if [ "$ANSWER" = "y" ]; then
     for file in  $@ ; do
     if [ -w "$TRASH/$file" ] ; then
         mv "$TRASH/$file" $currentPath/
     else
-        echo "Hmm,.. I cannot find $file."
+        echo ""
     fi
     done
   fi
